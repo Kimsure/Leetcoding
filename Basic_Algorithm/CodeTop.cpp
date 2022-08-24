@@ -8,8 +8,6 @@
 # include <string>
 # include<algorithm>
 using namespace std;
-
-
 /*
  * 69. x 的平方根 
  */
@@ -354,6 +352,9 @@ public:
     }
 };
 /*
+ * 二叉树合集
+ */
+/*
  * 129. 求根节点到叶节点数字之和（递归）
  */
 struct TreeNode {
@@ -397,5 +398,195 @@ public:
         return maxlen - 1;
     }
 };
-
- 
+/*
+ * 递归 回溯合集（子集, 组合篇）
+ */
+/*
+ * 78. 子集
+ */
+class Solution {
+public:
+    vector<vector<int>> res;
+    void backtrack(vector<int> nums, vector<int>& path, int start)
+    {
+        res.push_back(path);
+        for(int i = start; i < nums.size(); i++)
+        {
+            path.push_back(nums[i]);//做出选择
+            backtrack(nums, path, i+1);//递归进入下一层，注意i+1，标识下一个选择列表的开始位置，最重要的一步
+            path.pop_back();//撤销选择
+        }
+    }
+    vector<vector<int>> subsets(vector<int>& nums) {
+        vector<int> path;
+        backtrack(nums, path, 0);
+        return res;
+    }
+};
+/*
+ * 90. 子集 II(去重)
+ */
+// 应该去除当前选择列表中，与上一个数重复的那个数，引出的分支，如 “2，2” 这个选择列表，第二个 “2” 是最后重复的，应该去除这个 “2” 引出的分支
+class Solution {
+public:
+    vector<vector<int>> res;
+    void backtrack(vector<int> nums, vector<int>& path, int start)
+    {
+        res.push_back(path); // 把子集的空集先加进去
+        for(int i = start; i < nums.size(); i++)
+        {
+            //剪枝去重
+            if(i > start && nums[i] == nums[i - 1]) continue;
+            path.push_back(nums[i]);//做出选择
+            backtrack(nums, path, i+1);//递归进入下一层，注意i+1，标识下一个选择列表的开始位置，最重要的一步
+            path.pop_back();//撤销选择
+        }
+    }
+    vector<vector<int>> subsetsWithDup(vector<int>& nums) {
+        sort(nums.begin(),nums.end());
+        vector<int> path;
+        backtrack(nums, path, 0);
+        return res;
+    }
+};
+/*
+ * 90. 组合问题
+ */
+// 没有组合数量要求，仅仅是总和的限制，所以递归没有层数的限制
+//* 可以思考一下，这里如果排序后再递归组合问题，continue能换成break，因为前面小，小的组合不了，后面更不行
+class Solution {
+public:
+    vector<vector<int>> res;
+    void backtrack(vector<int>& candidates, vector<int>& path, int sum, int target, int start) {
+        if (sum == target) res.push_back(path); // 结束条件
+        for (int i = start; i < candidates.size(); i++) {
+            if (sum > target) continue;
+            path.push_back(candidates[i]);
+            backtrack(candidates, path, sum + candidates[i], target, i); // 组合问题start可以重复，不用i+1了，表示可以重复读取当前的数
+            path.pop_back(); // 回溯
+        }
+        // * 或者如下方法
+        for (int i = start; i < candidates.size(); i++) {
+            sum += candidates[i]; // 把sum写在外面，回溯时自然也要和path一样撤回
+            if (sum > target) continue;
+            path.push_back(candidates[i]);
+            // backtrack(candidates, path, sum + candidates[i], target, i); // 组合问题start可以重复，不用i+1了，表示可以重复读取当前的数
+            backtrack(candidates, path, sum, target, i); // 组合问题start可以重复，不用i+1了，表示可以重复读取当前的数
+            sum -= candidates[i]; // 回溯
+            path.pop_back(); // 回溯
+        }
+    }
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        vector<int> path;
+        backtrack(candidates, path, 0, target, 0);
+        return res;
+    }
+};
+/*
+ * 递归 回溯合集（排列篇）
+ */
+/*
+ * 全排列
+ */
+class Solution {
+public:
+    vector<int> path;
+    vector<vector<int>> res;
+    void backtrack(vector<int>& nums, vector<bool>& used) {
+        if (path.size() == nums.size()) {
+            res.push_back(path);
+            return;
+        }
+        for (int i = 0; i < nums.size(); i++) { //从给定的数中除去，用过的数，就是当前的选择列表
+            if (used[i] == true) continue; //用过的就跳过
+            used[i] = true; // 没用过的加进来 然后设为用过了
+            path.push_back(nums[i]);
+            backtrack(nums, used); // 递归
+            path.pop_back(); // 回溯
+            used[i] = false; // used回溯
+        }
+    }
+    vector<vector<int>> permute(vector<int>& nums) {
+        vector<bool> used(nums.size(), false); //used初始化为false
+        backtrack(nums, used);
+        return res;
+    }
+};
+/*
+ * 全排列 II（去重）
+ */
+// 重复序列nums返回不重复的全排列 必定去重 树层去重
+class Solution {
+private:
+    vector<vector<int>> result;
+    vector<int> path;
+    void backtracking (vector<int>& nums, vector<bool>& used) {
+        // 此时说明找到了一组
+        if (path.size() == nums.size()) {
+            result.push_back(path);
+            return;
+        }
+        for (int i = 0; i < nums.size(); i++) {
+            // used[i - 1] == true，说明同一树枝nums[i - 1]使用过
+            // used[i - 1] == false，说明同一树层nums[i - 1]使用过
+            // 如果同一树层nums[i - 1]使用过则直接跳过
+            if (i > 0 && nums[i] == nums[i - 1] && used[i - 1] == false) {
+                continue;
+            }
+            if (used[i] == false) {
+                used[i] = true; //设置当前数已用
+                path.push_back(nums[i]); 
+                backtracking(nums, used); // 递归 下一层
+                path.pop_back(); // 回溯
+                used[i] = false; // 撤销回溯
+            }
+        }
+    }
+public:
+    vector<vector<int>> permuteUnique(vector<int>& nums) {
+        result.clear();
+        path.clear();
+        sort(nums.begin(), nums.end()); // 不重复的问题，需要剪枝的 都要排序
+        vector<bool> used(nums.size(), false);
+        backtracking(nums, used);
+        return result;
+    }
+};
+/*
+ * 剑指 Offer 38. 字符串的排列
+ */
+class Solution {
+private:
+    vector<string> result;
+    string path;
+    void backtracking (const string& s, vector<bool>& used) {
+        // 此时说明找到了一组
+        if (path.size() == s.size()) {
+            result.push_back(path);
+            return;
+        }
+        for (int i = 0; i < s.size(); i++) {
+            // used[i - 1] == true，说明同一树枝nums[i - 1]使用过
+            // used[i - 1] == false，说明同一树层nums[i - 1]使用过
+            // 如果同一树层nums[i - 1]使用过则直接跳过
+            if (i > 0 && s[i] == s[i - 1] && used[i - 1] == false) {
+                continue;
+            }
+            if (used[i] == false) {
+                used[i] = true; //设置当前数已用
+                path.push_back(s[i]); 
+                backtracking(s, used); // 递归 下一层
+                path.pop_back(); // 回溯
+                used[i] = false; // 撤销回溯
+            }
+        }
+    }
+public:
+    vector<string> permutation(string s) {
+        if (s.size() == 0) return result;
+        sort(s.begin(), s.end()); // 不重复的问题，需要剪枝的 都要排序
+        vector<bool> used(s.size(), false);
+        backtracking(s, used);
+        return result;
+    }
+};
