@@ -591,6 +591,32 @@ public:
     }
 };
 /*
+ * 165. 比较版本号
+ */
+class Solution {
+public:
+    int compareVersion(string version1, string version2) {
+        int i = 0;
+        int j = 0;
+        while (i < version1.size() || j < version2.size()) {
+            long long num1 = 0, num2 = 0;
+            while (i < version1.size() && version1[i] != '.') {
+                num1 = num1*10 + version1[i] - '0'; // 实现stoi, 进行
+                i++;
+            }
+            while (j < version2.size() && version2[j] != '.') {
+                num2 = num2*10 + version2[j] - '0';
+                j++;
+            }
+            if (num1 > num2) return 1;
+            else if (num1 < num2) return -1;
+            i++;
+            j++; // 开始下一个 '.' 之后的版本判断
+        }
+        return 0;
+    }
+};
+/*
  *  113. 路径总和II
  */
 /*
@@ -601,7 +627,7 @@ public:
  *                          11              13     4
  *                      7        2                5  1
  * 这棵树递归时，会先递归到 7，然后判断左右子树为空 返回，递归到2，判断左右子树为空 返回；
- * 11 的两个子树DFS结束 返回，4 的左子树DFS结束，开始右子树DFS，但此时右子树DFS 指针指向nullptr，没有对此类指针判断的条件，所以报错
+ * 11 的两个子树DFS结束 返回，4 的zuo'zi'shu
  */
 /*
 class Solution {
@@ -628,30 +654,3 @@ public:
     }
 };
 */
-
-/*
- * 165. 比较版本号
- */
-class Solution {
-public:
-    int compareVersion(string version1, string version2) {
-        int i = 0;
-        int j = 0;
-        while (i < version1.size() || j < version2.size()) {
-            long long num1 = 0, num2 = 0;
-            while (i < version1.size() && version1[i] != '.') {
-                num1 = num1*10 + version1[i] - '0'; // 实现stoi, 进行
-                i++;
-            }
-            while (j < version2.size() && version2[j] != '.') {
-                num2 = num2*10 + version2[j] - '0';
-                j++;
-            }
-            if (num1 > num2) return 1;
-            else if (num1 < num2) return -1;
-            i++;
-            j++; // 开始下一个 '.' 之后的版本判断
-        }
-        return 0;
-    }
-};
