@@ -591,6 +591,29 @@ public:
     }
 };
 /*
+ *  112. 路径总和I
+ */
+class Solution {
+private:
+    int count = 0;
+    bool DFS(TreeNode* cur, int count) {
+        if (!cur -> left && !cur -> right && count == 0) return true;
+        if (!cur -> left && !cur -> right) return false;
+        if (cur -> left) {
+            if(DFS(cur -> left, count - cur -> left -> val)) return true;
+        }
+        if (cur -> right) {
+            if(DFS(cur -> right, count - cur -> right -> val)) return true;
+        }
+        return false;
+    }
+public:
+    bool hasPathSum(TreeNode* root, int sum) {
+        if (root == nullptr) return false;
+        return DFS(root, sum - root -> val);
+    }
+};
+/*
  *  113. 路径总和II
  */
 /*
@@ -628,6 +651,69 @@ public:
     }
 };
 */
+class Solution {
+public:
+    vector<vector<int>> res;
+    void dfs(TreeNode* root, int targetSum, vector<int> path){
+        if(!root){
+            return;
+        }
+        path.push_back(root->val);
+        if(!root->left && !root->right){
+            if(root->val == targetSum){
+                res.push_back(path);
+            }
+        }
+        dfs(root->left, targetSum-root->val, path);
+        dfs(root->right, targetSum-root->val, path);
+    }
+    vector<vector<int>> pathSum(TreeNode* root, int targetSum) {
+        dfs(root, targetSum, vector<int>());
+        return res;
+    }
+};
+/*
+ * 437. 路径总和 III
+ */
+class Solution {
+private:
+    int rootSum(TreeNode* root, long long targetSum) {
+        if (root == nullptr) return 0;
+        long long ret = 0;
+        if (root->val == targetSum) ret++;
+        ret += rootSum(root->left, targetSum - root->val);
+        ret += rootSum(root->right, targetSum - root->val);
+        return ret;
+    }
+public:
+    int pathSum(TreeNode* root, long long targetSum) {
+        if (root == nullptr) return 0;
+        int ans;
+        ans = rootSum(root, targetSum);
+        ans += pathSum(root->left, targetSum); // 左子节点当作下一次递归的父节点
+        ans += pathSum(root->right, targetSum); // 右子节点当作下一次递归的父节点
+        return ans;
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
  * 165. 比较版本号
