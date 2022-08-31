@@ -591,6 +591,41 @@ public:
     }
 };
 /*
+ * 面试题 08.09. 括号
+ * 剑指 Offer II 085. 生成匹配的括号
+ * 22. 括号生成
+ */
+class Solution {
+public:
+    void dfs(string paths,int left,int right,int n,vector<string>& res)
+    {
+        if(left>n || right>left)
+            return;
+        if(paths.size()==n*2)
+        {
+            res.push_back(paths);
+            return;
+        }
+        // 这样写是完整的递归+回溯过程，先放左，到头了就回溯，然后上一层放右
+        paths.push_back('(');
+        dfs(paths, left + 1, right, n, res);
+        paths.pop_back();
+        paths.push_back(')');
+        dfs(paths, left, right + 1, n, res);
+        paths.pop_back();
+        // 下面这样写是简单的递归，代码里没有体现回溯
+        // dfs(paths+"(",left+1,right,n,res);
+        // dfs(paths+")",left,right+1,n,res);
+    }
+    vector<string> generateParenthesis(int n) {
+        if(n<=0) return {};
+        vector<string> res;
+
+        dfs("",0,0,n,res);
+        return res;
+    }
+};
+/*
  *  112. 路径总和I
  */
 class Solution {
@@ -695,26 +730,6 @@ public:
         return ans;
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
  * 165. 比较版本号
  */
@@ -739,5 +754,125 @@ public:
             j++; // 开始下一个 '.' 之后的版本判断
         }
         return 0;
+    }
+};
+/*
+ * 栈的应用，括号匹配
+ */
+// 判断有效括号数量长度的一般栈写法： "()((())"
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        stack<int> stk;
+        for (int i = 0; i < s.length(); i++) {
+            if (s[i] == '(') {
+                // 遇到左括号，记录索引
+                stk.push(i);
+            } 
+            else {
+                // 遇到右括号
+                if (!stk.empty()) {
+                    // 配对的左括号对应索引，[leftIndex, i] 是一个合法括号子串
+                    int leftIndex = stk.top();
+                    stk.pop();
+                    // 这个合法括号子串的长度
+                    // 因为是从0开始的，以 "()"为例，结果为 1 - 0 + 1 == 2才对，也是闭区间的容量需要max-min后+1
+                    int len = i - leftIndex + 1; 
+                } 
+                else {
+                    stk.push(i); // 更新区间左边界，但是这里不写也没影响
+                }
+            }
+        }
+    }
+};
+/*
+ * 32. 最长有效括号
+ */
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        stack<int> stk;
+        int len = s.length();
+        int res = 0;
+        stk.push(-1); // 将最开头设为-1, 后面算长度的时候由于i = 0开始, 所以 -'-1' == +'1'
+        if (s.empty()) return 0;
+        for (int i = 0; i < len; i++) {
+            if (s[i] == '(') stk.push(i);
+            else {
+                stk.pop();
+                if (!stk.empty()) res = max(res, i - stk.top());
+                else stk.push(i);
+            }
+        }
+        return res;
+    }
+};
+/*
+ * 20.有效括号（678的前置）
+ */
+class Solution {
+public:
+    bool isValid(string s) {
+        if (s.empty()) return true;
+        // for (int i = 0; i < s.length(); i++) cout << s[i] << ' ';
+        stack<char> stk;
+        for (int i = 0; i < s.length(); i++) {
+            if (s[i] == '(') stk.push(')');
+            else if (s[i] == '{') stk.push('}');
+            else if (s[i] == '[') stk.push(']');
+            else if (stk.empty() || s[i] != stk.top()) return false;
+            else if (s[i] == stk.top()) stk.pop();
+        } 
+        return stk.empty();
+    }
+};
+/*
+ * 678. 有效的括号字符串(注意stack里存角标(i=0 1 2 3)而不是存字符的作用)
+ */
+class Solution {
+public:
+    bool checkValidString(string s) {
+        stack<char> stk1;
+        stack<char> stk2;
+        for (int i = 0; i < s.length(); i++) {
+            if (s[i] == '(')
+            {
+                stk1.push(i);
+            }
+            else if (s[i] == '*')
+            {
+                stk2.push(i);
+            }
+            else
+            {
+                if (!stk1.empty()) stk1.pop();
+                else if (!stk2.empty()) stk2.pop();
+                else return false;
+            } 
+        }
+        // if (stk1.empty() && stk2.empty()) return true;
+        // if (stk1.empty() && !stk2.empty()) return true;
+        // if (!stk1.empty() && stk2.empty()) return false;
+        // while (!stk1.empty() && !stk2.empty()) 
+        // {
+        //     if (!stk1.empty()) stk1.pop();
+        //     if (!stk2.empty()) stk2.pop();
+        // }
+        // return stk1.empty() && stk2.empty();
+        while (!stk1.empty()) {
+            int posL = stk1.top();
+            // cout << posL;
+            if (stk2.empty()) return false;
+            int posS = stk2.top();
+            // cout << posS;
+            if (posS > posL) {
+                stk2.pop();
+                stk1.pop();
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 };
