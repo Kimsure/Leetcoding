@@ -1010,39 +1010,3 @@ public:
         }
     }
 };
-/*
- * 34. 在排序数组中查找元素的第一个和最后一个位置
- */
-class Solution {
-private:
-    int findleft(vector<int> nums, int target) {
-        int len = nums.size();
-        int l = -1, r = len;
-        while(l + 1 != r) {
-            int mid = l + r >> 1;
-            if (nums[mid] < target) l = mid;
-            else r = mid;
-        }
-        if (r > len - 1 || nums[r] != target) return -1;
-        else return r;
-    }
-    int findright(vector<int> nums, int target) {
-        int len = nums.size();
-        int l = -1, r = len;
-        while(l + 1 != r) {
-            int mid = l + r >> 1;
-            if (nums[mid] <= target) l = mid;
-            else r = mid;
-        }
-        if (l < 0 || nums[l] != target) return -1;
-        else return l;
-    }
-public:
-    vector<int> searchRange(vector<int>& nums, int target) {
-        vector<int> res;
-        if (nums.empty()) return {-1, -1};
-        res.push_back(findleft(nums, target));
-        res.push_back(findright(nums, target));
-        return res;
-    }
-};
