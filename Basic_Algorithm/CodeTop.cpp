@@ -4,7 +4,7 @@
 # include <unordered_map>
 # include <stack>
 # include <queue>
-# include <iostream>
+# include <math>
 # include <string>
 # include<algorithm>
 using namespace std;
@@ -591,6 +591,41 @@ public:
     }
 };
 /*
+ * 面试题 08.09. 括号
+ * 剑指 Offer II 085. 生成匹配的括号
+ * 22. 括号生成
+ */
+class Solution {
+public:
+    void dfs(string paths,int left,int right,int n,vector<string>& res)
+    {
+        if(left>n || right>left)
+            return;
+        if(paths.size()==n*2)
+        {
+            res.push_back(paths);
+            return;
+        }
+        // 这样写是完整的递归+回溯过程，先放左，到头了就回溯，然后上一层放右
+        paths.push_back('(');
+        dfs(paths, left + 1, right, n, res);
+        paths.pop_back();
+        paths.push_back(')');
+        dfs(paths, left, right + 1, n, res);
+        paths.pop_back();
+        // 下面这样写是简单的递归，代码里没有体现回溯
+        // dfs(paths+"(",left+1,right,n,res);
+        // dfs(paths+")",left,right+1,n,res);
+    }
+    vector<string> generateParenthesis(int n) {
+        if(n<=0) return {};
+        vector<string> res;
+
+        dfs("",0,0,n,res);
+        return res;
+    }
+};
+/*
  *  112. 路径总和I
  */
 class Solution {
@@ -695,26 +730,6 @@ public:
         return ans;
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
  * 165. 比较版本号
  */
@@ -739,5 +754,259 @@ public:
             j++; // 开始下一个 '.' 之后的版本判断
         }
         return 0;
+    }
+};
+/*
+ * 栈的应用，括号匹配
+ */
+// 判断有效括号数量长度的一般栈写法： "()((())"
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        stack<int> stk;
+        for (int i = 0; i < s.length(); i++) {
+            if (s[i] == '(') {
+                // 遇到左括号，记录索引
+                stk.push(i);
+            } 
+            else {
+                // 遇到右括号
+                if (!stk.empty()) {
+                    // 配对的左括号对应索引，[leftIndex, i] 是一个合法括号子串
+                    int leftIndex = stk.top();
+                    stk.pop();
+                    // 这个合法括号子串的长度
+                    // 因为是从0开始的，以 "()"为例，结果为 1 - 0 + 1 == 2才对，也是闭区间的容量需要max-min后+1
+                    int len = i - leftIndex + 1; 
+                } 
+                else {
+                    stk.push(i); // 更新区间左边界，但是这里不写也没影响
+                }
+            }
+        }
+    }
+};
+/*
+ * 32. 最长有效括号
+ */
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        stack<int> stk;
+        int len = s.length();
+        int res = 0;
+        stk.push(-1); // 将最开头设为-1, 后面算长度的时候由于i = 0开始, 所以 -'-1' == +'1'
+        if (s.empty()) return 0;
+        for (int i = 0; i < len; i++) {
+            if (s[i] == '(') stk.push(i);
+            else {
+                stk.pop();
+                if (!stk.empty()) res = max(res, i - stk.top());
+                else stk.push(i);
+            }
+        }
+        return res;
+    }
+};
+/*
+ * 20.有效括号（678的前置）
+ */
+class Solution {
+public:
+    bool isValid(string s) {
+        if (s.empty()) return true;
+        // for (int i = 0; i < s.length(); i++) cout << s[i] << ' ';
+        stack<char> stk;
+        for (int i = 0; i < s.length(); i++) {
+            if (s[i] == '(') stk.push(')');
+            else if (s[i] == '{') stk.push('}');
+            else if (s[i] == '[') stk.push(']');
+            else if (stk.empty() || s[i] != stk.top()) return false;
+            else if (s[i] == stk.top()) stk.pop();
+        } 
+        return stk.empty();
+    }
+};
+/*
+ * 678. 有效的括号字符串(注意stack里存角标(i=0 1 2 3)而不是存字符的作用)
+ */
+class Solution {
+public:
+    bool checkValidString(string s) {
+        stack<char> stk1;
+        stack<char> stk2;
+        for (int i = 0; i < s.length(); i++) {
+            if (s[i] == '(')
+            {
+                stk1.push(i);
+            }
+            else if (s[i] == '*')
+            {
+                stk2.push(i);
+            }
+            else
+            {
+                if (!stk1.empty()) stk1.pop();
+                else if (!stk2.empty()) stk2.pop();
+                else return false;
+            } 
+        }
+        // if (stk1.empty() && stk2.empty()) return true;
+        // if (stk1.empty() && !stk2.empty()) return true;
+        // if (!stk1.empty() && stk2.empty()) return false;
+        // while (!stk1.empty() && !stk2.empty()) 
+        // {
+        //     if (!stk1.empty()) stk1.pop();
+        //     if (!stk2.empty()) stk2.pop();
+        // }
+        // return stk1.empty() && stk2.empty();
+        while (!stk1.empty()) {
+            int posL = stk1.top();
+            // cout << posL;
+            if (stk2.empty()) return false;
+            int posS = stk2.top();
+            // cout << posS;
+            if (posS > posL) {
+                stk2.pop();
+                stk1.pop();
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+/*
+ * 面试题. 最大子矩阵
+ */
+class Solution {
+public:
+    vector<int> getMaxMatrix(vector<vector<int>>& matrix) {
+        vector<int> ans(4);//保存最大子矩阵的左上角和右下角的行列坐标
+        int N = matrix.size();
+        int M = matrix[0].size();
+        vector<int> b(M,0);//记录当前i~j行组成大矩阵的每一列的和，将二维转化为一维
+        int sum;//相当于dp[i],dp_i
+        int maxsum=INT_MIN;//记录最大值
+        int bestr1,bestc1;//暂时记录左上角，相当于begin
+
+        for(int i=0;i<N;i++){     //以i为上边，从上而下扫描
+            for(int t=0;t<M;t++ ) b[t]=0;    //每次更换子矩形上边，就要清空b，重新计算每列的和
+            for(int j=i;j<N;j++){    //子矩阵的下边，从i到N-1，不断增加子矩阵的高
+                //一下就相当于求一次最大子序列和
+                sum = 0;//从头开始求dp
+                for(int k=0;k<M;k++){
+                    b[k]+=matrix[j][k];   
+//我们只是不断增加其高，也就是下移矩阵下边，所有这个矩阵每列的和只需要加上新加的哪一行的元素
+//因为我们求dp[i]的时候只需要dp[i-1]和nums[i],所有在我们不断更新b数组时就可以求出当前位置的dp_i
+                    if(sum>0){
+                        sum+=b[k];
+                    }
+                    else{
+                        sum=b[k];
+                        bestr1=i;//自立门户，暂时保存其左上角
+                        bestc1=k;
+                    }
+                    if( sum > maxsum){
+                        maxsum = sum;
+                        ans[0]=bestr1;//更新答案
+                        ans[1]=bestc1;
+                        ans[2]=j;
+                        ans[3]=k;
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+/*
+ * 98. 验证二叉搜索树
+ */
+class Solution {
+public:
+    vector<int> res;
+    void dfs(TreeNode* root) {
+        if (root == nullptr) return;
+        dfs(root->left);
+        res.push_back(root->val);
+        dfs(root->right);
+    }
+    bool isValidBST(TreeNode* root) {
+        if (root == nullptr) return false;
+        dfs(root);
+        for (auto i = 0; i < res.size() - 1; i++) {
+            if (res[i] >= res[i+1]) return false;
+        }
+        return true;
+    }
+};
+/*
+ * 64. 最小路径和
+ */
+class Solution {
+public:
+    int minPathSum(vector<vector<int>>& grid) {
+        vector<vector<int>> dp(grid.size(), vector<int> (grid[0].size(), 0));
+        dp = grid;
+        for (int i = 1; i < grid.size(); i++) {
+            dp[i][0] = dp[i][0] + dp[i-1][0];
+        }
+        for (int j = 1; j < grid[0].size(); j++) {
+            dp[0][j] = dp[0][j] + dp[0][j-1];
+        }
+        for (int i = 1; i < grid.size(); i++) {
+            for (int j = 1; j < grid[0].size(); j++) {
+                dp[i][j] = min(dp[i-1][j] + dp[i][j], dp[i][j-1] + dp[i][j]);
+                // dp[i][j] += min(dp[i-1][j], dp[i][j-1]);
+            }
+        }
+        return dp[grid.size() - 1][grid[0].size() - 1];
+    }
+};
+/*
+ * 470. 用 Rand7() 实现 Rand10()
+ */
+// The rand7() API is already defined for you.
+// int rand7();
+// @return a random integer in the range 1 to 7
+class Solution {
+private:
+    int rand7() {
+        // rand() % (b - a + 1) + a ;    就表示  a~b 之间的一个随机整数。
+        return rand() % (7 - 1 + 1) + 1;
+    }
+public:
+    int rand10() {
+        while (1) {
+            int num = (rand7() - 1) * 7 + rand7();
+            if (num <= 40) return num % 10 + 1;
+        }
+    }
+};
+/*
+ * 旋转图像（矩阵）
+ */
+class Solution {
+public:
+    void rotate(vector<vector<int>>& matrix) {
+        int m = matrix.size();
+        int n = matrix[0].size();
+        // 转置
+        for (int i = 0; i < m; i++) {
+            for (int j = i; j < n; j++) {
+                int tmp = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = tmp;
+            }
+        }
+        // 轴对称
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n/2; j++) {
+                int tmp = matrix[i][j];
+                matrix[i][j] = matrix[i][n-j-1];
+                matrix[i][n-j-1] = tmp;
+            }
+        }
     }
 };
