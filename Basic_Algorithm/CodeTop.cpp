@@ -399,6 +399,19 @@ public:
     }
 };
 /*
+ * 226. 翻转二叉树
+ */
+class Solution {
+public:
+    TreeNode* invertTree(TreeNode* root) {
+        if (!root) return NULL;
+        swap(root->left, root->right);
+        invertTree(root->left);
+        invertTree(root->right);
+        return root;
+    }
+};
+/*
  * 递归 回溯合集（子集, 组合篇）
  */
 /*
@@ -479,6 +492,27 @@ public:
     vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
         vector<int> path;
         backtrack(candidates, path, 0, target, 0);
+        return res;
+    }
+};
+class Solution {
+public:
+    vector<vector<int>> res;
+    vector<int> vec;
+    void DFS(vector<int>& candidates, int target, int sum, int startIndex) {
+        if (sum > target) return;
+        if (sum == target) res.push_back(vec);
+        for (int i = startIndex; i < candidates.size(); i++) {
+            sum += candidates[i];
+            cout << sum << endl;
+            vec.push_back(candidates[i]);
+            DFS(candidates, target, sum, i);
+            sum -= candidates[i];
+            vec.pop_back();
+        }
+    }
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        DFS(candidates, target, 0, 0);
         return res;
     }
 };
@@ -628,6 +662,16 @@ public:
 /*
  *  112. 路径总和I
  */
+class Solution {
+public:
+    bool hasPathSum(TreeNode* root, int targetSum) {
+        if (!root) return false;
+        if (!root->left && !root->right) {
+            return targetSum == root->val ? true : false;
+        }
+        return hasPathSum(root->left, targetSum-root->val) || hasPathSum(root->right, targetSum-root->val); 
+    }
+};
 class Solution {
 private:
     int count = 0;

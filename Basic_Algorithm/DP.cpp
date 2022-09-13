@@ -922,7 +922,95 @@ class Solution26_5 {
         return dp[len - 1][1];
     } 
 };
-
+/*
+ * 718. 最长重复子数组
+ */
+class Solution {
+public:
+    int findLength(vector<int>& nums1, vector<int>& nums2) {
+        int len1 = nums1.size(), len2 = nums2.size();
+        int res = 0;
+        vector<vector<int>> dp(len1 + 1, vector<int>(len2 + 1, 0));
+        for (int i = 1; i <= len1; i++) {
+            for (int j = 1; j <= len2; j++) {
+                if (nums1[i-1] == nums2[j-1]) dp[i][j] = dp[i-1][j-1] + 1;
+                res = max(res, dp[i][j]);
+            }
+        }
+        return res;
+    }
+};
+/*
+ * 1277. 统计全为 1 的正方形子矩阵
+ * 用 f[i][j] 表示以 (i, j) 为右下角的正方形的最大边长，那么除此定义之外，f[i][j] = x 也表示以 (i, j) 为右下角的正方形的数目为 x
+ * （即边长为 1, 2, ..., x 的正方形各一个）。在计算出所有的 f[i][j] 后，我们将它们进行累加，就可以得到矩阵中正方形的数目
+ */
+// 函数模板求三数最大值
+template <typename T>
+T cmin(T a, T b) {
+    return a < b ? a : b;
+}
+template <typename T>
+T min(T a, T b, T c) {
+    T tamp = cmin(a, b);
+    return tamp < c ? tamp : c;
+}
+// 
+class Solution {
+public:
+    int countSquares(vector<vector<int>>& matrix) {
+        int m = matrix.size(), n = matrix[0].size();
+        vector<vector<int>> f(m, vector<int>(n));
+        int ans = 0;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (i == 0 || j == 0) {
+                    f[i][j] = matrix[i][j];
+                }
+                else if (matrix[i][j] == 0) {
+                    f[i][j] = 0;
+                }
+                else {
+                    f[i][j] = min(f[i][j - 1], f[i - 1][j], f[i - 1][j - 1]) + 1;
+                }
+                ans += f[i][j];
+            }
+        }
+        return ans;
+    }
+};
+/*
+ * 221. 最大正方形
+ * 用 f[i][j] 表示以 (i, j) 为右下角的正方形的最大边长，平方就是面积
+ */
+class Solution {
+public:
+    int maximalSquare(vector<vector<char>>& matrix) {
+        int m = matrix.size(), n = matrix[0].size();
+        if (m == 0 || n == 0) return 0;
+        int res = 0;
+        vector<vector<int>> dp(m, vector<int>(n, 0));
+        for (auto i = 0; i < m; i++)
+        {
+            for (auto j = 0; j < n; j++)
+            {   
+                if (matrix[i][j] == '1')
+                {
+                    if (i == 0 || j == 0)
+                    {
+                        dp[i][j] = 1;
+                    }
+                    else
+                    {
+                        dp[i][j] = min(dp[i][j - 1], dp[i - 1][j], dp[i - 1][j - 1]) + 1;
+                    }
+                    res = max(res, dp[i][j]);
+                }   
+            }
+        }
+        return res*res;
+    }
+};
 
 int main() {
     int a, b, c, d, e, f, g, h, i, j= 0;
