@@ -1090,3 +1090,62 @@ public:
         return res;
     }
 };
+/*
+ * 岛屿问题总结：DFS深度优先搜索
+ */
+/*
+ * 695. 岛屿的最大面积
+ */
+class Solution {
+public:
+    int DFS(vector<vector<int>>& grid, int i, int j) {
+        int m = grid.size(), n = grid[0].size();
+        if (i < 0 || j < 0 || i >= m || j >= n || grid[i][j] != 1) return 0;
+        grid[i][j] = 2;
+        return 1 + DFS(grid, i+1, j) + DFS(grid, i, j+1) + DFS(grid, i-1, j) + DFS(grid, i, j-1);
+    }
+    int maxAreaOfIsland(vector<vector<int>>& grid) {   
+        int m = grid.size(), n = grid[0].size();
+        int sq = 0;
+        if (!m) return 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 1) {
+                    sq = max(sq, DFS(grid, i, j));
+                }
+            }
+        }
+        return sq;
+    }
+};
+/*
+ * 200. 岛屿数量
+ */
+class Solution {
+private:
+    
+    void DFS(vector<vector<char>>& grid, int i, int j) {
+        int m = grid.size(), n = grid[0].size();
+        if (i < 0 || j < 0 || i >= m || j >= n || grid[i][j] == '0') return;
+        grid[i][j] = '0';
+        DFS(grid, i + 1, j);
+        DFS(grid, i, j + 1);
+        DFS(grid, i - 1, j);
+        DFS(grid, i, j - 1);
+    }
+public:
+    int numIslands(vector<vector<char>>& grid) {
+        int count = 0;
+        int m = grid.size(), n = grid[0].size();
+        if (!m) return 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == '1') {
+                    DFS(grid, i, j);
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+};
