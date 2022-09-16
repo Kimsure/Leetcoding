@@ -1,6 +1,7 @@
 # include <iostream>
 # include <vector>
 # include <unordered_set>
+# include <set>
 # include <unordered_map>
 # include <stack>
 # include <queue>
@@ -1147,5 +1148,106 @@ public:
             }
         }
         return count;
+    }
+};
+/*
+ * 463. 岛屿的周长
+ */
+// 实际上，岛屿的周长是计算岛屿全部的「边缘」，而这些边缘就是我们在 DFS 遍历中，dfs 函数返回的位置。观察题目示例，
+// 我们可以将岛屿的周长中的边分为两类，如下图所示。黄色的边是与网格边界相邻的周长，而蓝色的边是与海洋格子相邻的周长
+// 当我们的 dfs 函数因为「坐标 (r, c) 超出网格范围」返回的时候，实际上就经过了一条黄色的边；而当函数因为「当前格子是海洋格子」返回的时候，
+// 实际上就经过了一条蓝色的边
+class Solution {
+public:
+    int DFS(vector<vector<int>>& grid, int i, int j) {
+        int m = grid.size(), n = grid[0].size();
+        // 函数因为「坐标 (r, c) 超出网格范围」返回，对应一条黄色的边
+        if (i < 0 || j < 0 || i >= m || j >= n) {
+            return 1;
+        }
+        // 函数因为「当前格子是海洋格子」返回，对应一条蓝色的边
+        else if (grid[i][j] == 0) {
+            return 1;
+        }
+        // 函数因为「当前格子是已遍历的陆地格子」返回，和周长没关系
+        else if (grid[i][j] == 2) {
+            return 0;
+        }
+        grid[i][j] = 2;
+        return DFS(grid, i+1, j) + DFS(grid, i, j+1) + DFS(grid, i-1, j) + DFS(grid, i, j-1);
+    }
+    int maxAreaOfIsland(vector<vector<int>>& grid) {   
+        int m = grid.size(), n = grid[0].size();
+        int sq = 0;
+        if (!m) return 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 1) {
+                    sq = max(sq, DFS(grid, i, j));
+                }
+            }
+        }
+        return sq;
+    }
+};
+/*
+ * 827. 最大人工岛
+ */
+class Solution {
+public:
+    //dfs求面积
+    bool isArea(vector<vector<int>>& grid, int x, int y) {
+        if (0 <= x && x < grid.size() && 0 <= y && y < grid[0].size()) return true;
+        return false;
+    }
+    //需要传入index 从2开始
+    int dfs(vector<vector<int>>& grid, int x, int y, int index) {
+        if (!isArea(grid, x, y)) return 0;
+        if (grid[x][y] != 1) return 0;
+        grid[x][y] = index;
+        return 1 + dfs(grid, x-1, y, index)+dfs(grid, x+1, y, index)+dfs(grid, x, y-1, index)+dfs(grid, x, y+1, index); 
+
+    }
+    //set求邻居
+    set<int>getN(vector<vector<int>>& grid, int x, int y) {
+        set<int>hset;
+        if (x - 1 >= 0 && grid[x - 1][y] != 0) hset.insert(grid[x - 1][y]);
+        if (y - 1 >= 0 && grid[x][y - 1] != 0) hset.insert(grid[x][y - 1]);
+        if (x + 1 < grid.size() && grid[x + 1][y] != 0) hset.insert(grid[x + 1][y]);
+        if (y + 1 < grid[0].size() && grid[x][y + 1] != 0) hset.insert(grid[x][y + 1]);
+        return hset;  
+
+    }
+
+    int largestIsland(vector<vector<int>>& grid) {
+        int r = grid.size();
+        if (!r) return 1;
+        int l = grid[0].size();
+        int index = 2;
+        unordered_map<int,int>hmap;
+        int maxval = 0;
+        for (int i = 0;i < r;i++) {
+            for (int j = 0;j < l;j++) {
+                if (grid[i][j] == 1){
+                    int temp = dfs(grid, i, j, index);
+                    hmap.insert(pair<int, int>(index, temp));
+                    maxval = max(temp, maxval);
+                    index++;
+                }
+            }
+        }
+        for (int i = 0;i < r; i++) {
+            for (int j = 0;j < l; j++) {
+                if (grid[i][j] == 0){
+                    set<int>nums = getN(grid,i,j);
+                    int ans = 1;
+                    for (auto item = nums.begin(); item!=nums.end(); item++) {
+                        ans += hmap[*item];
+                    }
+                    maxval = max(maxval, ans);
+                }
+            }
+        }
+        return maxval;
     }
 };
