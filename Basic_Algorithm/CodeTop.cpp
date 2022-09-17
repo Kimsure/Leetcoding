@@ -1124,7 +1124,6 @@ public:
  */
 class Solution {
 private:
-    
     void DFS(vector<vector<char>>& grid, int i, int j) {
         int m = grid.size(), n = grid[0].size();
         if (i < 0 || j < 0 || i >= m || j >= n || grid[i][j] == '0') return;
@@ -1195,59 +1194,159 @@ public:
  */
 class Solution {
 public:
-    //dfs求面积
-    bool isArea(vector<vector<int>>& grid, int x, int y) {
-        if (0 <= x && x < grid.size() && 0 <= y && y < grid[0].size()) return true;
-        return false;
-    }
-    //需要传入index 从2开始
-    int dfs(vector<vector<int>>& grid, int x, int y, int index) {
-        if (!isArea(grid, x, y)) return 0;
-        if (grid[x][y] != 1) return 0;
-        grid[x][y] = index;
-        return 1 + dfs(grid, x-1, y, index)+dfs(grid, x+1, y, index)+dfs(grid, x, y-1, index)+dfs(grid, x, y+1, index); 
-
-    }
-    //set求邻居
-    set<int>getN(vector<vector<int>>& grid, int x, int y) {
-        set<int>hset;
-        if (x - 1 >= 0 && grid[x - 1][y] != 0) hset.insert(grid[x - 1][y]);
-        if (y - 1 >= 0 && grid[x][y - 1] != 0) hset.insert(grid[x][y - 1]);
-        if (x + 1 < grid.size() && grid[x + 1][y] != 0) hset.insert(grid[x + 1][y]);
-        if (y + 1 < grid[0].size() && grid[x][y + 1] != 0) hset.insert(grid[x][y + 1]);
-        return hset;  
-
-    }
-
+    unordered_map<int, int> islandAreas; // 岛屿编号 -> 岛屿面积的 map
     int largestIsland(vector<vector<int>>& grid) {
-        int r = grid.size();
-        if (!r) return 1;
-        int l = grid[0].size();
-        int index = 2;
-        unordered_map<int,int>hmap;
-        int maxval = 0;
-        for (int i = 0;i < r;i++) {
-            for (int j = 0;j < l;j++) {
-                if (grid[i][j] == 1){
-                    int temp = dfs(grid, i, j, index);
-                    hmap.insert(pair<int, int>(index, temp));
-                    maxval = max(temp, maxval);
-                    index++;
+        islandAreas[0] = 0;
+        int value = 2; // 遍历过的岛屿设为 i，从 2 开始
+        for (int r = 0; r < grid.size(); r++) {
+            for (int c = 0; c < grid[0].size(); c++) {
+                if (grid[r][c] == 1) {
+                    int a = DFS(grid, r, c, value);
+                    islandAreas[value] = a; // 这里的key值是小岛的index（第几个小岛），value值是该小岛的总面积
+                    value++;
+                    // 这里 第一个遍历后的小岛 都为 2，第二个遍历后的小岛，都为 3
                 }
             }
         }
-        for (int i = 0;i < r; i++) {
-            for (int j = 0;j < l; j++) {
-                if (grid[i][j] == 0){
-                    set<int>nums = getN(grid,i,j);
-                    int ans = 1;
-                    for (auto item = nums.begin(); item!=nums.end(); item++) {
-                        ans += hmap[*item];
-                    }
-                    maxval = max(maxval, ans);
+        int res = 0;
+        for (int r = 0; r < grid.size(); r++) {
+            for (int c = 0; c < grid[0].size(); c++) {
+                // 依次尝试填海
+                int ta = thisArea(grid, r, c);
+                res = max(res, ta); // 更新最大值
+            }
+        }
+        return res;
+    }
+    int thisArea(vector<vector<int>>& grid, int r, int c) {
+        if (grid[r][c] != 0) {
+            // 返回该index小岛的面积，后面会加到res里返回填海造陆后的面积
+            return islandAreas[grid[r][c]];
+        }
+        int res = 0;
+        unordered_set<int> adjs;
+        // 这里的判断是：判断周围点是否在范围内，并且判断这个周围点是不是非海（是陆地）
+        if (inArea(grid, r-1, c) && grid[r-1][c] > 0) {
+            adjs.insert(grid[r-1][c]);
+        }
+        if (inArea(grid, r+1, c) && grid[r+1][c] > 0) {
+            adjs.insert(grid[r+1][c]);
+        }
+        if (inArea(grid, r, c-1) && grid[r][c-1] > 0) {
+            adjs.insert(grid[r][c-1]);
+        }
+        if (inArea(grid, r, c+1) && grid[r][c+1] > 0) {
+            adjs.insert(grid[r][c+1]);
+        }
+        // 将这些周围点加到集合set adjs里，然后遍历集合，因为(i, j)必定是海，那么周围点(上下左右)如果是陆地的话
+        // 就可以去计算周围点的面积（这里是从map里记录内容找到的），然后加到res里，作为最终结果
+        // 也就相当于，如果(i, j)周围点是陆地的话，就可以将他们对应的陆地面积加和
+        for (int adj : adjs) {
+            res += islandAreas[adj];
+        }
+        // 最后res+1，就是将(i, j)这块海填成陆地，与其它陆地连在一起的总面积
+        return res + 1;
+    }
+    // value 表示当前岛屿编号
+    int DFS(vector<vector<int>>& grid, int r, int c, int value) {
+        if (!inArea(grid, r, c)) {
+            return 0;
+        }
+        if (grid[r][c] != 1) {
+            return 0;
+        }
+        grid[r][c] = value;
+        return 1 + DFS(grid, r - 1, c, value) + DFS(grid, r + 1, c, value) + DFS(grid, r, c - 1, value) + DFS(grid, r, c + 1, value);
+    }
+    bool inArea(vector<vector<int>>& grid, int r, int c) {
+        return 0 <= r && r < grid.size() && 0 <= c && c < grid[0].size();
+    }
+};
+/*
+ * 1254. 包围的岛屿
+ */
+class Solution {
+public:
+    void DFS(vector<vector<int>>& grid, int i, int j) {
+        int m = grid.size(), n = grid[0].size();
+        if (i < 0 || j < 0 || i >= m || j >= n || grid[i][j] == 1) return;
+        grid[i][j] = 1;
+        DFS(grid, i + 1, j);
+        DFS(grid, i, j + 1);
+        DFS(grid, i - 1, j);
+        DFS(grid, i, j - 1);
+    }
+    void dfs_bound(vector<vector<int>>& grid, int i, int j) {
+        int m = grid.size(), n = grid[0].size();
+        if (i < 0 || j < 0 || i >= m || j >= n || grid[i][j] == 1) return;
+        grid[i][j] = 1;
+        dfs_bound(grid, i + 1, j);
+        dfs_bound(grid, i, j + 1);
+        dfs_bound(grid, i - 1, j);
+        dfs_bound(grid, i, j - 1);
+    }
+    int closedIsland(vector<vector<int>>& grid) {
+        int count = 0;
+        int m = grid.size(), n = grid[0].size();
+        if (!m) return 0;
+        // 先把周围的不封闭的点处理掉
+        for (int i = 0; i < grid.size(); ++i) {
+            dfs_bound(grid, i, 0);
+            dfs_bound(grid, i, grid[0].size() - 1);
+        }
+        // 先把周围的不封闭的点处理掉
+        for (int j = 0; j < grid[0].size(); ++j) {
+            dfs_bound(grid, 0, j);
+            dfs_bound(grid, grid.size() - 1, j);
+        }
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0) {
+                    DFS(grid, i, j);
+                    count++;
                 }
             }
         }
-        return maxval;
+        return count;
+    }
+};
+// 上面这种有点麻烦 并且感觉没理解透
+class Solution {
+public:
+    int res = 0;
+    void DFS(vector<vector<int>>& grid, int i, int j) {
+        int m = grid.size(), n = grid[0].size();
+        if (outBoundary(grid, i, j)) {
+            res = 0; // 如果超出边界，这个点就不记录面积，并且返回
+            return;
+        }
+        if (grid[i][j] != 0) return;
+        grid[i][j] = 1;
+        DFS(grid, i + 1, j);
+        DFS(grid, i, j + 1);
+        DFS(grid, i - 1, j);
+        DFS(grid, i, j - 1);
+    }
+    bool isBoundary(vector<vector<int>>& grid, int i, int j) {
+        return i == 0 || j == 0 || i == grid.size() - 1 || j == grid[0].size() - 1;
+    }
+    bool outBoundary(vector<vector<int>>& grid, int i, int j) {
+        return i < 0 || j < 0 || i > grid.size() - 1 || j > grid[0].size() - 1;
+    }
+    int closedIsland(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        int count = 0;
+        if (!m) return 0;
+        // 先把周围的不封闭的点处理掉
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0 && !(isBoundary(grid, i, j))) {
+                    res = 1; // 当前点满足，则面积从 1 开始记起
+                    DFS(grid, i, j);
+                    count += res;
+                }
+            }
+        }
+        return count;
     }
 };
