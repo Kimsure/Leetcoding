@@ -43,7 +43,6 @@ public:
         dummy->next = head;
         ListNode* start = dummy;
         start->next = head;
-        // 
         for (int i = 0; i < left - 1; i++) {
             start = start->next;
         }
