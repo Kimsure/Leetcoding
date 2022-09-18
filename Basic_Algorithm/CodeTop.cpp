@@ -1265,6 +1265,7 @@ public:
 /*
  * 1254. 包围的岛屿
  */
+// 这种做法是先对边界上的点做DFS，这样如果是和边界连通的岛屿我们就把他们全部转化为海洋，然后再DFS剩下的陆地，那么就一定不是连通海洋的了
 class Solution {
 public:
     void DFS(vector<vector<int>>& grid, int i, int j) {
@@ -1310,14 +1311,26 @@ public:
         return count;
     }
 };
-// 上面这种有点麻烦 并且感觉没理解透
+// 上面这种有点麻烦 不过现在感觉先处理边界的两次DFS真妙啊
+/* example
+ * 0 0 1 1 0 1 0 0 1 0
+ * 1 1 0 1 1 0 1 1 1 0
+ * 1 0 1 1 1 0 0 1 1 0
+ * 0 1 1 0 0 0 0 1 0 1 
+ * 0 0 0 0 0 0 1 1 1 0
+ * 0 1 0 1 0 1 0 1 1 1 
+ * 1 0 1 0 1 1 0 0 0 1
+ * 1 1 1 1 1 1 0 0 0 0 
+ * 1 1 1 0 0 1 0 1 0 1
+ * 1 1 1 0 1 1 0 1 1 0
+ */
 class Solution {
 public:
     int res = 0;
     void DFS(vector<vector<int>>& grid, int i, int j) {
         int m = grid.size(), n = grid[0].size();
         if (outBoundary(grid, i, j)) {
-            res = 0; // 如果超出边界，这个点就不记录面积，并且返回
+            res = 0; // 如果超出边界，这个区域就不记录数量，并且返回
             return;
         }
         if (grid[i][j] != 0) return;
@@ -1341,12 +1354,85 @@ public:
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
                 if (grid[i][j] == 0 && !(isBoundary(grid, i, j))) {
-                    res = 1; // 当前点满足，则面积从 1 开始记起
+                    res = 1; // 当前点满足，则数量从 1 开始记起
                     DFS(grid, i, j);
                     count += res;
                 }
             }
         }
         return count;
+    }
+};
+/*
+ * 130. 被围绕的区域
+ */
+// 如下有问题 还未解决 通过50%，问题出在DFS里，没有解决内部连接到海洋的问题
+class Solution {
+public:
+    void DFS(vector<vector<char>>& board, int i, int j) {
+        int m = board.size(), n = board[0].size();
+        if (outBoundary(board, i, j) || board[i][j] != 'O') return;
+        board[i][j] = 'X';
+        DFS(board, i+1, j);
+        DFS(board, i, j+1);
+        DFS(board, i-1, j);
+        DFS(board, i, j-1);
+    }
+    bool isBoundary(vector<vector<char>>& board, int i, int j) {
+        return i == 0 || j == 0 || i == board.size() - 1 || j == board[0].size() - 1;
+    }
+    bool outBoundary(vector<vector<char>>& board, int i, int j) {
+        return i < 0 || j < 0 || i >= board.size() || j >= board[0].size();
+    }
+    void solve(vector<vector<char>>& board) {
+        int m = board.size(), n = board[0].size();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (board[i][j] == 'O' && !(isBoundary(board, i, j))) DFS(board, i, j);
+            }
+        } 
+    }
+};
+// 两次DFS，先处理边界，同1254.
+class Solution {
+public:
+    void DFS(vector<vector<char>>& board, int i, int j) {
+        int m = board.size(), n = board[0].size();
+        if (outBoundary(board, i, j) || board[i][j] != 'O') return;
+        board[i][j] = 'N'; // 处理能够连接到边界的区域，标记为N
+        DFS(board, i+1, j);
+        DFS(board, i, j+1);
+        DFS(board, i-1, j);
+        DFS(board, i, j-1);
+    }
+    bool isBoundary(vector<vector<char>>& board, int i, int j) {
+        return i == 0 || j == 0 || i == board.size() - 1 || j == board[0].size() - 1;
+    }
+    bool outBoundary(vector<vector<char>>& board, int i, int j) {
+        return i < 0 || j < 0 || i >= board.size() || j >= board[0].size();
+    }
+    void solve(vector<vector<char>>& board) {
+        int m = board.size(), n = board[0].size();
+        // 处理边界，把所有的边界或与边界相连的 O 替换成 N
+        for (int i = 0; i < m; i++) {
+            DFS(board, i, 0);
+            DFS(board, i, n-1);
+        }
+        for (int j = 0; j < n; j++) {
+            DFS(board, 0, j);
+            DFS(board, m-1, j);
+        }
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                // 遍历，把剩下所有的 O 替换成 X，剩下的 O 就是被包围的岛屿
+                // 把所有的 N 替换成 O
+                if ('O' == board[i][j]) {
+                    board[i][j] = 'X';
+                }
+                if ('N' == board[i][j]) {
+                    board[i][j] = 'O';
+                }
+            }
+        } 
     }
 };
