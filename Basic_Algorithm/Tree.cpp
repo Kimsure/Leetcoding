@@ -4,9 +4,9 @@
 # include <unordered_map>
 # include <stack>
 # include <queue>
-# include<algorithm>
+# include <algorithm>
 # include <iostream>
-# include <string>
+# include <string.h>
 using namespace std;
 
 /*
@@ -42,6 +42,7 @@ public:
     }
     vector<int> preorderTraversal(TreeNode* root) {
         vector<int> result;
+        if (root == nullptr) return {};
         traversal(root, result);
         return result;
     }
@@ -56,6 +57,7 @@ public:
     }
     vector<int> inorderTraversal(TreeNode* root) {
         vector<int> res;
+        if (root == nullptr) return {};
         traversal(root, res);
         return res;
     }
@@ -70,6 +72,7 @@ public:
     }
     vector<int> postorderTraversal(TreeNode* root) {
         vector<int> res;
+        if (root == nullptr) return {};
         traversal(root, res);
         return res;
     }
@@ -112,7 +115,7 @@ public:
 };
 class Solution2_2 {
 public:
-    vector<int> preorderTraversal(TreeNode* root) {
+    vector<int> inorderTraversal(TreeNode* root) {
         vector<int> res;
         stack<TreeNode*> st;
         TreeNode* cur = root;
@@ -285,6 +288,23 @@ public:
 /*
  * N叉树的层序遍历
  */ 
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    vector<Node*> children;
+
+    Node() {}
+
+    Node(int _val) {
+        val = _val;
+    }
+
+    Node(int _val, vector<Node*> _children) {
+        val = _val;
+        children = _children;
+    }
+};
 class Solution3_5 {
 public:
     vector<vector<int>> levelOrder(Node* root) {
@@ -311,16 +331,31 @@ public:
  * 116/117. 填充每个节点的下一个右侧节点指针 (一个二叉树不止有左右节点 多出来next指针要指向下一个右侧节点)
  * 填充它的每个 next 指针，让这个指针指向其下一个右侧节点。如果找不到下一个右侧节点，则将 next 指针设置为 NULL
  */ 
+// Definition for a Node.
+class NodeP {
+public:
+    int val;
+    NodeP* left;
+    NodeP* right;
+    NodeP* next;
+
+    NodeP() : val(0), left(NULL), right(NULL), next(NULL) {}
+
+    NodeP(int _val) : val(_val), left(NULL), right(NULL), next(NULL) {}
+
+    NodeP(int _val, NodeP* _left, NodeP* _right, NodeP* _next)
+        : val(_val), left(_left), right(_right), next(_next) {}
+};
 class Solution3_6 {
 public:
-    vector<int> connect(TreeNode* root) {
+    NodeP* connect(NodeP* root) {
         vector<int> res;
-        queue<TreeNode*> que;
+        queue<NodeP*> que;
         if (root != NULL) que.push(root);
         while (!que.empty()) {
             int size = que.size();
-            TreeNode* nodePre;
-            TreeNode* node;
+            NodeP* nodePre;
+            NodeP* node;
             for (int i = 0; i < size; i++) {
                 if (i == 0) {
                     nodePre = que.front();
@@ -343,26 +378,41 @@ public:
  * 二叉树的最大深度
  * 给定一个二叉树，找出其最大深度。二叉树的深度为根节点到最远叶子节点的最长路径上的节点数。说明: 叶子节点是指没有子节点的节点。
  */ 
+// 迭代BFS
 class Solution4_1 {
 public:
     int maxDepth(TreeNode* root) {
-        if (root == NULL) return 0;
-        queue<TreeNode*> que;
-        if (root != NULL) que.push(root);
+        if (root == nullptr) return 0;
         int depth = 0;
+        queue<TreeNode*> que;
+        que.push(root);
         while (!que.empty()) {
             int size = que.size();
-            vector<int> vec;
             for (int i = 0; i < size; i++) {
                 TreeNode* node = que.front();
                 que.pop();
-                vec.push_back(node -> val);
-                if (node -> left) que.push(node -> left);
-                if (node -> right) que.push(node -> right);
+                if (node->left) que.push(node->left);
+                if (node->right) que.push(node->right);
             }
             depth++;
         }
         return depth;
+    }
+};
+// 递归DFS
+class Solution {
+public:
+    int DFS(TreeNode* root) {
+        if (root == nullptr) return 0;
+        else {
+            int left = DFS(root->left);
+            int right = DFS(root->right);
+            return max(left, right) + 1;
+        }
+    }
+    int maxDepth(TreeNode* root) {
+        if (root == nullptr) return 0;
+        else return DFS(root);
     }
 };
 /*
@@ -393,19 +443,37 @@ public:
     }
 };
 /*
+ * 543. 二叉树的直径
+ */ 
+class Solution {
+   int maxlen = 0;
+private:
+    int dfs(TreeNode* root) { 
+        if (root == nullptr) return 0;
+        int leftSize = dfs(root->left);
+        int rightSize = dfs(root->right);
+        maxlen = max(maxlen, leftSize + rightSize); // 将每个节点最大直径当前最大值比较并取更大者
+        return max(leftSize, rightSize) + 1; // 返回节点深度
+    }
+public:
+    int diameterOfBinaryTree(TreeNode* root) {
+        dfs(root);
+        return maxlen;
+    }
+};
+/*
  * 226.翻转二叉树(对称)
  */
 class Solution5_1 {
 public:
     bool compareTree(TreeNode* left, TreeNode* right) {
         // 先判断有没有
-        if (!(left && right)) return false;
-        else if (left -> val != right -> val) return false;
+        if (left == nullptr && right == nullptr) return true;
+        else if (left == nullptr && right != nullptr) return false;
+        else if (left != nullptr && right == nullptr) return false;
+        else if (left->val != right->val) return false;
         // 此层没有问题 再递归向下
-        bool outside = compareTree(left -> left, right -> right);
-        bool inside = compareTree(left -> right, right -> left);
-        bool final = outside && inside;
-        return final;
+        return compareTree(left->left, right->right) && compareTree(left->right, right->left);
     }
     bool isSymmetric(TreeNode* root) {
         if (root == NULL) return false;
@@ -499,6 +567,24 @@ class Solution6_1 {
     }
 };
 /*
+ * 124. 二叉树的最大路径和
+ */
+class Solution {
+public:
+    int res = INT_MIN;
+    int maxPathSum(TreeNode* root) {
+        dfs(root);
+        return res;
+    }
+
+    int dfs(TreeNode* root){
+        if(root == nullptr)  return 0;
+        int left = max(0, dfs(root->left)), right = max(0, dfs(root->right));
+        res = max(res, root->val + left + right);
+        return root->val + max(left, right);
+    }
+};
+/*
  * 112. 路径总和
  * 不要去累加然后判断是否等于目标和，那么代码比较麻烦，可以用递减，让计数器count初始为目标和，然后每次减去遍历路径节点上的数值。
  * 如果最后count == 0，同时到了叶子节点的话，说明找到了目标和。
@@ -519,8 +605,8 @@ private:
         return false;
     }
 public:
-    bool haspathsum(TreeNode* cur, int sum) {
-        if (cur == nullptr) return false;
+    bool haspathsum(TreeNode* root, int sum) {
+        if (root == nullptr) return false;
         return DFS(root, root -> val);
     }
 };
@@ -698,7 +784,7 @@ public:
         if (arr.size() < 2) return 0;
         int res = INT_MAX;
         for (int i = 1; i < arr.size(); i++) {
-            res = min(res, arr[i] - arr[i - 1])
+            res = min(res, arr[i] - arr[i - 1]);
         }
         return res;
     }
@@ -734,8 +820,9 @@ private:
         return;
     }
     bool cmp(const pair<int, int>& a, const pair<int, int>& b) {
-        return a.second > b.second
+        return a.second > b.second;
     }
+
 public:
     vector<int> findMode(TreeNode* root) {
         unordered_map<int, int> hash;
@@ -758,19 +845,15 @@ public:
  * 或者左子树出现结点q，右子树出现节点p，那么该节点就是节点p和q的最近公共祖先
  */
 class Solution8_1 {
-private:
-    TreeNode* DFS(TreeNode* root, TreeNode* p, TreeNode* q) {
-        if (root == nullptr || root == p || root == q) return root;
-        TreeNode* left = DFS(root->left, p, q);
-        TreeNode* right = DFS(root->right, p, q);
-        if (left == nullptr && right == nullptr) return NULL;
-        else if (left != nullptr && right == nullptr) return left;
-        else if (left == nullptr && right != nullptr) return right;
-        else return root;
-    }
 public:
     TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
-        return DFS(root, p, q);
+        if (root == nullptr || root == p || root == q) return root;
+        TreeNode* left = lowestCommonAncestor(root->left, p, q);
+        TreeNode* right = lowestCommonAncestor(root->right, p, q);
+        if (left == nullptr && right == nullptr) return nullptr;
+        if (left != nullptr && right == nullptr) return left;
+        if (right != nullptr && left == nullptr) return right;
+        else return root;
     }
 };
 /*
@@ -931,5 +1014,35 @@ class Solution8_7 {
     TreeNode* convertBST(TreeNode* root) {
         pre = 0;
         return DFS(root);
+    }
+};
+/* 
+ * 96.不同的二叉搜索树
+ * 给定一个整数 n，求以 1 ... n 为节点组成的二叉搜索树有多少种？
+ * dp[3]，就是 元素1为头结点搜索树的数量 + 元素2为头结点搜索树的数量 + 元素3为头结点搜索树的数量
+ * 元素1为头结点搜索树的数量 = 右子树有2个元素的搜索树数量 * 左子树有0个元素的搜索树数量
+ * 元素2为头结点搜索树的数量 = 右子树有1个元素的搜索树数量 * 左子树有1个元素的搜索树数量
+ * 元素3为头结点搜索树的数量 = 右子树有0个元素的搜索树数量 * 左子树有2个元素的搜索树数
+ * 有2个元素的搜索树数量就是dp[2]。
+ * 有1个元素的搜索树数量就是dp[1]。
+ * 有0个元素的搜索树数量就是dp[0]。
+ * 所以dp[3] = dp[2] * dp[0] + dp[1] * dp[1] + dp[0] * dp[2]
+ */
+class Solution {
+public:
+    int numTrees(int n) {
+        if(n <= 2) return n;
+        vector<int> dp(n+1, 0);
+        // int dp[n+1] ;
+        // memset(dp ,0, sizeof(dp));
+        dp[0] = 1;
+        dp[1] = 1;
+        dp[2] = 2;
+        for(int i = 3; i <= n; i++){
+            for(int j = 1; j <= i; j++){
+                dp[i] += (dp[j-1] * dp[i-j]);
+            }
+        }
+        return dp[n];
     }
 };
