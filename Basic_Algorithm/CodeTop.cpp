@@ -258,6 +258,30 @@ public:
  * 堆排序合集（优先队列，topK问题）
  */
 /*
+ * 数组排序
+ */
+class Solution {
+public:
+    struct cmp {
+        bool operator () (int& p1, int& p2) {
+            return p1 > p2;
+        }
+    };
+    vector<int> MySort(vector<int>& arr) {
+        priority_queue<int, vector<int>, cmp> pq;
+        for (auto i = 0; i < arr.size(); i++)
+        {
+            pq.push(arr[i]);
+        }
+        vector<int> res;
+        while(!pq.empty()){
+            res.emplace_back(pq.top());
+            pq.pop();
+        }
+        return res;
+    }
+};
+/*
  * 347. 前 K 个高频元素
  */
 class Solution {
