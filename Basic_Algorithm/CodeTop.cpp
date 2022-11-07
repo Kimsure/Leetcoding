@@ -77,8 +77,7 @@ public:
             int mid = l + (r - l) / 2;
             if (nums[mid] == target) return mid;
             else if (nums[mid] < target) l = mid;
-            else r = mid;
-            
+            else r = mid;   
         }
         return -1;
         

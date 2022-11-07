@@ -123,7 +123,7 @@ public:
             pre = next;
         }
     }
-    bool isPalindrome(ListNode* head) {
+    bool isPailndrome(ListNode* head) {
         ListNode* dummy = new ListNode(-1);
         dummy->next = head;
         ListNode* slow = dummy;
@@ -448,3 +448,52 @@ public:
         return mergeTwoLists(mergeKLists(l1), mergeKLists(l2));
     }
 };
+/*
+ *  牛客 链表的奇偶重排
+ */
+class Solution {
+public:
+    ListNode* oddEvenList(ListNode* head) {
+        // write code here
+        if (head == nullptr) return head;
+        ListNode* odd = head; // 奇数
+        ListNode* even = head->next; // 偶数
+        ListNode* evenH = even;
+        while (even != nullptr && even->next != nullptr)
+        {
+            odd->next = even->next;
+            odd = odd->next;
+            even->next = odd->next;
+            even = even->next;
+        }
+        odd->next = evenH;
+        return head;
+    }
+};
+/*
+ *  牛客 链表的偶奇重排
+ */
+class Solution {
+public:
+    ListNode* oddEvenList(ListNode* head) {
+        // write code here
+        if (head == nullptr) return head;
+        ListNode* odd = head; // 奇数
+        ListNode* even = head->next; // 偶数
+        ListNode* oddH = odd; 
+        ListNode* evenH = even;
+        while (even != nullptr && even->next != nullptr)
+        {
+            odd->next = even->next;
+            odd = odd->next;
+            even->next = odd->next;
+            even = even->next;
+        }
+        odd->next = nullptr; // 注意奇数节点的最后一个肯定还连着最后一个偶数节点，所以要断开不然会成环
+        even->next = oddH;
+        return evenH;
+    }
+};
+
+
+
