@@ -22,10 +22,10 @@ using namespace std;
  * 64位操作系统下指针变量大小为8，32位操作系统下指针变量大小为4
  */
 int num = 8;
-void ChangePoint(int *p2)//入参类型为指针，则p2和p1是两个指针，两个指针指向的地址相同。
+void ChangePoint(int* p2)//入参类型为指针，则p2和p1是两个指针，两个指针指向的地址相同。
 {
     int i = 0;
-    int *p3 = &i;
+    int* p3 = &i;
     *p2 = num;//改变指针p2指向内容的值即改变了p1指向内容的值，及a的值也变为8。
     p2 = p3;//指针变量p2的改变，但不会影响到p1的指向。
     cout << "test changepoint" << endl;

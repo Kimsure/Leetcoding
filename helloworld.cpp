@@ -8,13 +8,27 @@
 // 按下 Ctrl + Shift + B 编译，但不运行。
 
 #include <iostream>
+using namespace std;
 
 /**
  * 程序执行的入口点。
  */
 int main() {
     // 在标准输出中打印 "Hello, world!"
-    std::cout << "Hello, world!" << std::endl;
+    int one[2][2] = {{1,2},{3,4}};
+    // one[1][1] = {2};
+    cout << *(&one+1) <<endl;
+    cout << one <<endl;
+
+    int a[5] = {5,6,7,8,9};
+    int* b = (int*)(&a + 1);
+    cout << &a << endl;
+    cout << (int*)(&a + 1) << endl;
+    cout << (int*)(&a + 2) << endl;
+    cout << *b << endl;
+    // cout 
+    cout << *(a + 1) << *(b - 1);
+    return 0;
 }
 
 // 此文件编译运行将输出 "Hello, world!"。
